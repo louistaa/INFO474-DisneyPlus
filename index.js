@@ -62,6 +62,10 @@ processData = (dataset) => {
 
     moveToSeason(arrayOfFrequencies);
 
+    // convert to array of objects format for visualization
+    let frequencyArr = arrayOfObject(arrayOfFrequencies);
+    console.log(frequencyArr);
+
     // arrayOfFrequencies.push(frequencyCount);
     // console.log(arrayOfFrequencies);
 
@@ -95,4 +99,14 @@ moveToSeason = (arrayOfFrequencies) => {
             delete arrayOfFrequencies[9][key];
         }
     }
+}
+
+arrayOfObject = (arrayOfFrequencies) => {
+    let frequencies = [];
+    arrayOfFrequencies.forEach((object) => {
+        let result = Object.keys(object)
+            .map(key => ({ id: key, frequency: object[key] }));
+        frequencies.push(result);
+    })
+    return frequencies;
 }
