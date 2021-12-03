@@ -20,7 +20,8 @@ processData = (dataset) => {
 
     // start at 1 to skip show_id
     // ends one early to skip the description
-    for (let i = 1; i < numColumns - 1; i++) {
+    // but creates a placeholder for season length
+    for (let i = 1; i < numColumns; i++) {
         // push placeholder objects for each column
         arrayOfFrequencies.push({});
     }
@@ -54,8 +55,12 @@ processData = (dataset) => {
             }
         }
     })
+    // swap genre and movies time column
+    let temp = arrayOfFrequencies[8];
+    arrayOfFrequencies[8] = arrayOfFrequencies[9];
+    arrayOfFrequencies[9] = temp;
 
-    console.log(arrayOfFrequencies)
+    moveToSeason(arrayOfFrequencies);
 
     // arrayOfFrequencies.push(frequencyCount);
     // console.log(arrayOfFrequencies);
@@ -79,4 +84,16 @@ cleanRow = (value, map) => {
             map[string]++;
         }
     })
+}
+
+moveToSeason = (arrayOfFrequencies) => {
+    let movieTimes = arrayOfFrequencies[9]
+    for (let key in movieTimes) {
+        // moving the season to its own column
+        if (key.includes("Season")) {
+            arrayOfFrequencies[10][key] = movieTimes[key];
+            delete arrayOfFrequencies[9][key];
+        }
+        
+    }
 }
