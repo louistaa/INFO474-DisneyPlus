@@ -21,21 +21,24 @@ processData = (dataset) => {
         // push placeholder objects for each column
         arrayOfFrequencies.push({});
     }
-    
-    let frequencyCount = {};
 
     // for each row in the dataset
     dataset.forEach((element) => {
         // start at index 1 to skip show_id columns
-        for (let i = 1; i < 2; i++) {
+        for (let i = 1; i < numColumns; i++) {
+            // find corresponding map to the column
+            let map = arrayOfFrequencies[i - 1];
+            
             let value = element[columns[i]];
-            // check if key exists in the map
-            if (!frequencyCount.hasOwnProperty(value)) {
-                // create a new key
-                frequencyCount[value] = 0;
-            } 
-            // increment
-            frequencyCount[value]++;
+            // check if value is not empty, only add if it is not empty
+            if (value != "") {
+                // check if key exists in the map
+                if (!map.hasOwnProperty(value)) {
+                    map[value] = 0;
+                }
+                // increment 
+                map[value]++;
+            }
         }
     })
 
