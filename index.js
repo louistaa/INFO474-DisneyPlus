@@ -94,6 +94,5 @@ moveToSeason = (arrayOfFrequencies) => {
             arrayOfFrequencies[10][key] = movieTimes[key];
             delete arrayOfFrequencies[9][key];
         }
-        
     }
 }
