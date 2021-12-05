@@ -115,7 +115,14 @@ let data = d3.csv('./disney_plus_titles.csv')
             svg.append('g')
                 .attr('class', 'axis-label')
                 .call(xAxisTop)
-                .attr('transform', 'translate ( ' + padding.l * 4 + ', ' + padding.t + ')');
+                .attr('transform', 'translate ( ' + padding.l * 4.5 + ', ' + padding.t + ')');
+
+            svg.append('text')
+                .attr('transform', 'translate (' + svgWidth * 1.5 + ',' + padding.t  / 3 + ')')
+                .text('Frequency (%)')
+                .attr('fill', '#4b8bc8')
+                .attr('font-weight', 800)
+                .attr('font-size', '20px');
 
             updateChart(consumableData[index], currentSelection);
         })
@@ -146,7 +153,7 @@ updateChart = (data, column) => {
             return (d.frequency * rectWidths[column] * barBand);
         })
         .attr('height', barHeight)
-        .attr('x', 120);
+        .attr('x', 140);
 
     bars.exit().remove();
 
