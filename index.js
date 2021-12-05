@@ -74,9 +74,7 @@ let data = d3.csv('./disney_plus_titles.csv')
 
         let consumableData = processData(dataset);
         dropDown.addEventListener('click', () => {
-            // document.querySelectorAll('text').innerHTML = "";
-            console.log(svg);
-            svg.selectAll("g").exit().remove();
+            svg.selectAll('.axis-label').remove();
 
             // sort by ascending frequencies
             consumableData[index].sort((a, b) => {
@@ -112,27 +110,12 @@ let data = d3.csv('./disney_plus_titles.csv')
             let xAxisTop = d3.axisTop(xScale).ticks(6).tickFormat((d) => {
                 return d * 100 + '%';
             });
+
             // append the top axis
             svg.append('g')
                 .attr('class', 'axis-label')
                 .call(xAxisTop)
                 .attr('transform', 'translate ( ' + padding.l * 4 + ', ' + padding.t + ')');
-
-            // define tick format function to append % for axis bottom
-            let xAxisBottom = d3.axisBottom(xScale).ticks(6).tickFormat((d) => {
-                return d + '%';
-            });
-
-            // append the axis bottom
-            svg.append('g')
-                .attr('class', 'axis-label')
-                .call(xAxisBottom)
-                .attr('transform', 'translate ( ' + (padding.r) + ', ' + (svgHeight - padding.b) + ')');
-
-            // append the title of the graph
-            svg.append('text')
-                .attr('transform', 'translate (' + (chartWidth - 145) + ',' + (padding.t / 2) + ')')
-                .text('Letter Frequency (%)');
 
             updateChart(consumableData[index], currentSelection);
         })
