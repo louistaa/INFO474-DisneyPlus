@@ -1,5 +1,4 @@
 // create the graph and append to svg
-
 let svg = d3.select('#svg');
 
 // Get layout parameters
@@ -12,72 +11,139 @@ let padding = { t: 60, r: 40, b: 30, l: 40 };
 let chartWidth = svgWidth - padding.l - padding.r;
 let chartHeight = svgHeight - padding.t - padding.b;
 
-// Compute the spacing for bar bands based on all 26 letters
-let barBand = chartHeight / 26;
-let barHeight = barBand * 0.7;
+let barBand;
+let barHeight;
 
 // Create a group element for appending chart elements
 let chartG = svg.append('g')
     .attr('transform', 'translate(' + [padding.l, padding.t] + ')');
 
+// keeping track of the rect widths for each column
+// index 1: rect width
+// index 2: rect left padding
+// index 3: tick bar padding multipler
+let rectWidths = {
+    show_type: 4.06,
+    director: 1457,
+    actor: 3950,
+    location: 28.5,
+    date: 44.25,
+    year: 256.2,
+    rating: 60.3,
+    genre: 137,
+    minutes: 553,
+    season: 34.8
+}
+
+// keep track of current drop down menu selection
+
+let currentSelection;
+let maxFrequency;
+
 // fetch the data
 let data = d3.csv('./disney_plus_titles.csv')
     .then((dataset) => {
         console.log("Data done downloading.");
-        let consumableData = processData(dataset);
+        // create dropdown menus
+        let columns = Object.keys(rectWidths);
 
-        let test = consumableData[7];
-        convertToPercentage(test);
+        let dropDown = document.querySelector('.dropdown-menu')
 
-        let maxFrequency = Number.MIN_VALUE;
+        let index = 0;
 
-        test.forEach((row) => {
-            if (row.frequency > maxFrequency) {
-                maxFrequency = row.frequency;
-            }
+        columns.forEach((column) => {
+            let menuLink = document.createElement('a');
+            menuLink.classList.add('dropdown-item');
+            menuLink.innerHTML = column;
+            dropDown.appendChild(menuLink)
         })
 
-        // Add X Axis
-        let xScale = d3.scaleLinear()
-            .domain([0, maxFrequency])
-            .range([0, svgWidth * 2.5]);
+        // update text to reflect current selection
+        $('.dropdown-menu a').click(function () {
+            $('#dropdownMenuButton').text($(this).text());
+            currentSelection = $(this).text();
 
-        // define tick format function to append % 
-        let xAxisTop = d3.axisTop(xScale).ticks(6).tickFormat((d) => {
-            return d * 100 + '%';
-        });
-        // append the top axis
-        svg.append('g')
-            .attr('class', 'axis-label')
-            .call(xAxisTop)
-            .attr('transform', 'translate ( ' + padding.l * 2 + ', ' + padding.t + ')');
-
-        // define tick format function to append % for axis bottom
-        let xAxisBottom = d3.axisBottom(xScale).ticks(6).tickFormat((d) => {
-            return d + '%';
+            index = 0;
+            for (key in Object.keys(rectWidths)) {
+                if (Object.keys(rectWidths)[key] == currentSelection) {
+                    index = key;
+                    break;
+                }
+            }
         });
 
-        // append the axis bottom
-        svg.append('g')
-            .attr('class', 'axis-label')
-            .call(xAxisBottom)
-            .attr('transform', 'translate ( ' + (padding.r) + ', ' + (svgHeight - padding.b) + ')');
+        let consumableData = processData(dataset);
+        dropDown.addEventListener('click', () => {
+            // document.querySelectorAll('text').innerHTML = "";
+            console.log(svg);
+            svg.selectAll("g").exit().remove();
 
-        // append the title of the graph
-        svg.append('text')
-            .attr('transform', 'translate (' + (chartWidth - 145) + ',' + (padding.t / 2) + ')')
-            .text('Letter Frequency (%)');
+            // sort by ascending frequencies
+            consumableData[index].sort((a, b) => {
+                return b.frequency - a.frequency;
+            })
 
-        updateChart(test);
+            let numberOfBands = Object.keys(consumableData[index]).length;
 
+            // no more than 30 bars allowed
+            if (numberOfBands > 15) {
+                numberOfBands = 15;
+            }
+
+            // final calculation for barBand
+            barBand = chartHeight / numberOfBands;
+            barHeight = barBand * 0.7
+
+            convertToPercentage(consumableData[index]);
+
+            maxFrequency = Number.MIN_VALUE;
+
+            consumableData[index].forEach((row) => {
+                if (row.frequency > maxFrequency) {
+                    maxFrequency = row.frequency;
+                }
+            })
+            // Add X Axis
+            let xScale = d3.scaleLinear()
+                .domain([0, maxFrequency])
+                .range([0, svgWidth * 2.5]);
+
+            // define tick format function to append % 
+            let xAxisTop = d3.axisTop(xScale).ticks(6).tickFormat((d) => {
+                return d * 100 + '%';
+            });
+            // append the top axis
+            svg.append('g')
+                .attr('class', 'axis-label')
+                .call(xAxisTop)
+                .attr('transform', 'translate ( ' + padding.l * 4 + ', ' + padding.t + ')');
+
+            // define tick format function to append % for axis bottom
+            let xAxisBottom = d3.axisBottom(xScale).ticks(6).tickFormat((d) => {
+                return d + '%';
+            });
+
+            // append the axis bottom
+            svg.append('g')
+                .attr('class', 'axis-label')
+                .call(xAxisBottom)
+                .attr('transform', 'translate ( ' + (padding.r) + ', ' + (svgHeight - padding.b) + ')');
+
+            // append the title of the graph
+            svg.append('text')
+                .attr('transform', 'translate (' + (chartWidth - 145) + ',' + (padding.t / 2) + ')')
+                .text('Letter Frequency (%)');
+
+            updateChart(consumableData[index], currentSelection);
+        })
     })
     .catch((err) => {
         console.error(err);
     }
-);
+    );
 
 // will take in a column
-updateChart = (data) => {
+updateChart = (data, column) => {
     let bars = chartG.selectAll('.bar')
         .data(data, (d) => {
             return d.id;
@@ -94,11 +160,10 @@ updateChart = (data) => {
 
     barEnter.append('rect')
         .attr('width', (d) => {
-            console.log(d);
-            return (d.frequency * 52 * barBand);
+            return (d.frequency * rectWidths[column] * barBand);
         })
         .attr('height', barHeight)
-        .attr('x', 40);
+        .attr('x', 120);
 
     bars.exit().remove();
 
@@ -108,6 +173,8 @@ updateChart = (data) => {
         .text((d) => {
             return d.id;
         })
+        .attr('fill', '#4b8bc8')
+        .attr('font-weight', 800)
 }
 
 // create the circles for the scatter plot
@@ -163,10 +230,11 @@ processData = (dataset) => {
 
     moveToSeason(arrayOfFrequencies);
 
+    // delete the movie name column
+    delete arrayOfFrequencies[1];
+
     // convert to array of objects format for visualization
     let frequencyArr = arrayOfObject(arrayOfFrequencies);
-
-    console.log(frequencyArr);
 
     console.log("Processing the data has ended.");
 
@@ -224,6 +292,4 @@ convertToPercentage = (dataset) => {
     dataset.forEach((datum) => {
         datum.frequency = (datum.frequency / total);
     })
-
-    console.log(dataset);
 }
