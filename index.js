@@ -26,7 +26,7 @@ let data = d3.csv('./disney_plus_titles.csv')
         console.log("Data done downloading.");
         let consumableData = processData(dataset);
 
-        let test = consumableData[0];
+        let test = consumableData[7];
         convertToPercentage(test);
 
         let maxFrequency = Number.MIN_VALUE;
@@ -40,7 +40,7 @@ let data = d3.csv('./disney_plus_titles.csv')
         // Add X Axis
         let xScale = d3.scaleLinear()
             .domain([0, maxFrequency])
-            .range([0, chartWidth]);
+            .range([0, svgWidth * 2.5]);
 
         // define tick format function to append % 
         let xAxisTop = d3.axisTop(xScale).ticks(6).tickFormat((d) => {
@@ -50,7 +50,7 @@ let data = d3.csv('./disney_plus_titles.csv')
         svg.append('g')
             .attr('class', 'axis-label')
             .call(xAxisTop)
-            .attr('transform', 'translate ( ' + padding.l + ', ' + padding.t + ')');
+            .attr('transform', 'translate ( ' + padding.l * 2 + ', ' + padding.t + ')');
 
         // define tick format function to append % for axis bottom
         let xAxisBottom = d3.axisBottom(xScale).ticks(6).tickFormat((d) => {
@@ -63,7 +63,7 @@ let data = d3.csv('./disney_plus_titles.csv')
             .call(xAxisBottom)
             .attr('transform', 'translate ( ' + (padding.r) + ', ' + (svgHeight - padding.b) + ')');
 
-        // append the tittle of the graph
+        // append the title of the graph
         svg.append('text')
             .attr('transform', 'translate (' + (chartWidth - 145) + ',' + (padding.t / 2) + ')')
             .text('Letter Frequency (%)');
@@ -95,17 +95,18 @@ updateChart = (data) => {
     barEnter.append('rect')
         .attr('width', (d) => {
             console.log(d);
-            return (d.frequency * 40 * barBand);
+            return (d.frequency * 52 * barBand);
         })
-        .attr('height', barHeight);
+        .attr('height', barHeight)
+        .attr('x', 40);
 
     bars.exit().remove();
 
     barEnter.append('text')
-        .attr('x', -20)
+        .attr('x', -40)
         .attr('y', 12)
         .text((d) => {
-            return d.letter;
+            return d.id;
         })
 }
 
